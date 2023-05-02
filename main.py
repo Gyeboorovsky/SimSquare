@@ -19,7 +19,7 @@ class WhiteSquare:
 
 pygame.init()
 
-screen = pygame.display.set_mode((100, 100))
+screen = pygame.display.set_mode((1000, 1000))
 
 square = WhiteSquare(50, 50, 10, 10)
 
@@ -31,15 +31,18 @@ while True:
 
     keys = pygame.key.get_pressed()
     if keys[pygame.K_UP]:
-        square.update(0, -1)
+        square.update(0, -10)
     if keys[pygame.K_DOWN]:
-        square.update(0, 1)
+        square.update(0, 10)
     if keys[pygame.K_LEFT]:
-        square.update(-1, 0)
+        square.update(-10, 0)
     if keys[pygame.K_RIGHT]:
-        square.update(1, 0)
+        square.update(10, 0)
 
     screen.fill((0, 0, 0))
+    for i in range(0, 1000, 10):
+        for j in range(0, 1000, 10):
+            pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(i, j, 10, 10), 1)
     square.draw(screen)
     pygame.display.flip()
 
