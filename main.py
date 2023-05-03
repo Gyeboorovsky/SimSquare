@@ -1,49 +1,75 @@
 import pygame
 import sys
 
-class WhiteSquare:
-    def __init__(self, x, y, width, height):
-        self.x = x
-        self.y = y
-        self.width = width
-        self.height = height
-        self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
+from colors import red, blue
+from entity_generator import EntityGenerator
+from hooman import Hooman
+from ai_entity import AIEntity
 
-    def draw(self, screen):
-        pygame.draw.rect(screen, (255, 255, 255), self.rect)
+class Game:
+    def __init__(self):
+        pygame.init()
+        self.screen = pygame.display.set_mode((1000, 1000))
+        self.hooman = Hooman(5, 5)
 
-    def update(self, dx, dy):
-        self.x += dx
-        self.y += dy
-        self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
+        self.ai_entities = EntityGenerator.initial_state(self)
+        self.entity_generator = EntityGenerator()
+        self.clock = pygame.time.Clock()
 
-pygame.init()
+    def check_proximity_and_create(self):
+        new_entities = []
+        for i in range(len(self.ai_entities)):
+            mate = self.ai_entities[i].is_eligible_for_reproduction(self.ai_entities)
+            if mate is not None:
+                new_x = self.ai_entities[i].position[0] + 1
+                new_y = self.ai_entities[i].position[1]
+                new_color = [
+                    (self.ai_entities[i].color[j] + mate.color[j]) // 2 for j in range(3)
+                ]
+                new_entity = AIEntity(new_x, new_y, new_color)
+                new_entities.append(new_entity)
+                self.ai_entities[i].moves_since_last_reproduction = 0
+        return new_entities
 
-screen = pygame.display.set_mode((1000, 1000))
+    def remove_older_entities_on_same_position(self):
+        new_ai_entities = []
+        for i in range(len(self.ai_entities)):
+            younger_entity_on_same_position = False
+            for j in range(len(self.ai_entities)):
+                if i != j and self.ai_entities[i].position == self.ai_entities[j].position:
+                    if self.ai_entities[i].is_younger_than(self.ai_entities[j]):
+                        younger_entity_on_same_position = True
+                        break
+            if not younger_entity_on_same_position:
+                new_ai_entities.append(self.ai_entities[i])
+        self.ai_entities = new_ai_entities
 
-square = WhiteSquare(50, 50, 10, 10)
+    def main_loop(self):
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
 
-while True:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            sys.exit()
+            for ai_entity in self.ai_entities:
+                ai_entity.ai_move()
 
-    keys = pygame.key.get_pressed()
-    if keys[pygame.K_UP]:
-        square.update(0, -10)
-    if keys[pygame.K_DOWN]:
-        square.update(0, 10)
-    if keys[pygame.K_LEFT]:
-        square.update(-10, 0)
-    if keys[pygame.K_RIGHT]:
-        square.update(10, 0)
+            new_entities = self.check_proximity_and_create()
+            self.ai_entities.extend(new_entities)
 
-    screen.fill((0, 0, 0))
-    for i in range(0, 1000, 10):
-        for j in range(0, 1000, 10):
-            pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(i, j, 10, 10), 1)
-    square.draw(screen)
-    pygame.display.flip()
+            self.remove_older_entities_on_same_position()
 
-    pygame.time.Clock().tick(60)
+            self.ai_entities = [entity for entity in self.ai_entities if not entity.is_dead()]
+
+            self.screen.fill((0, 0, 0))
+
+            for ai_entity in self.ai_entities:
+                ai_entity.draw(self.screen)
+
+            pygame.display.flip()
+
+            self.clock.tick(200)
+
+if __name__ == '__main__':
+    game = Game()
+    game.main_loop()
