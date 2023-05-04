@@ -1,14 +1,17 @@
 import random
 import pygame
+
+import config
 from hooman import Hooman
 
 class AIEntity(Hooman):
-    def __init__(self, x, y, color):
+    def __init__(self, x, y, color, inverted_speed):
         super().__init__(x, y)
         self.color = color
-        self.life = 500
-        self.reward_threshold = 100
-        self.moves_since_last_reproduction = 0
+        self.life = config.life_time
+        self.reproduction_threshold = config.reproduction_age
+        self.moves_since_last_reproduction = config.time_between_reproductions
+        self.invert_speed = inverted_speed
 
     def draw(self, screen):
         pygame.draw.rect(screen, self.color, self.rect)
@@ -35,7 +38,7 @@ class AIEntity(Hooman):
                 dy = abs(self.position[1] - other.position[1])
                 distance = max(dx, dy)
 
-                if distance <= 5:
+                if distance <= config.reproduction_distance:
                     return other
         return None
 
@@ -43,7 +46,7 @@ class AIEntity(Hooman):
         return {
             "color": self.color,
             "max_life": self.max_life,
-            "reward_threshold": self.reward_threshold,
+            "reward_threshold": self.reproduction_threshold,
         }
 
     def ai_move(self):

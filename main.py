@@ -1,7 +1,7 @@
 import pygame
 import sys
 
-from colors import red, blue
+import config
 from entity_generator import EntityGenerator
 from hooman import Hooman
 from ai_entity import AIEntity
@@ -9,12 +9,13 @@ from ai_entity import AIEntity
 class Game:
     def __init__(self):
         pygame.init()
-        self.screen = pygame.display.set_mode((1000, 1000))
+        self.screen = pygame.display.set_mode((config.screen_width, config.screen_height))
         self.hooman = Hooman(5, 5)
 
         self.ai_entities = EntityGenerator.initial_state(self)
         self.entity_generator = EntityGenerator()
         self.clock = pygame.time.Clock()
+        self.tick = 0
 
     def check_proximity_and_create(self):
         new_entities = []
@@ -26,7 +27,7 @@ class Game:
                 new_color = [
                     (self.ai_entities[i].color[j] + mate.color[j]) // 2 for j in range(3)
                 ]
-                new_entity = AIEntity(new_x, new_y, new_color)
+                new_entity = AIEntity(new_x, new_y, new_color, 9)
                 new_entities.append(new_entity)
                 self.ai_entities[i].moves_since_last_reproduction = 0
         return new_entities
@@ -68,7 +69,8 @@ class Game:
 
             pygame.display.flip()
 
-            self.clock.tick(200)
+            self.clock.tick(config.ticks)
+            self.tick += 1;
 
 if __name__ == '__main__':
     game = Game()

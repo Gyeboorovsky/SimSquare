@@ -1,5 +1,8 @@
 import pygame
 
+import config
+
+
 class Hooman:
     def __init__(self, x, y):
         self.position = [x, y]
@@ -14,18 +17,6 @@ class Hooman:
         new_x = self.position[0] + dx
         new_y = self.position[1] + dy
 
-        if 0 <= new_x < 100 and 0 <= new_y < 100:
+        if 0 <= new_x < config.screen_width / 10 and 0 <= new_y < config.screen_height / 10:
             self.position = [new_x, new_y]
             self.rect.topleft = [new_x * 10, new_y * 10]
-
-    def handle_input(self, keys):
-        dx, dy = 0, 0
-        if keys[pygame.K_UP]:
-            dy = -1
-        if keys[pygame.K_DOWN]:
-            dy = 1
-        if keys[pygame.K_LEFT]:
-            dx = -1
-        if keys[pygame.K_RIGHT]:
-            dx = 1
-        return dx, dy
